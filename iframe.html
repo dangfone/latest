@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+</head>
+<body>
+
+<script>
+/* =========================================================
+   0️⃣ Object registry (DevTools-style)
+========================================================= */
+const __objectStore = new Map();
+let __objectId = 0;
+
+function storeObject(obj) {
+  for (const [id, o] of __objectStore) {
+    if (o === obj) return id;
+  }
+  const id = "obj_" + (++__objectId);
+  __objectStore.set(id, obj);
+  return id;
+}
+
+/* =========================================================
+   1️⃣ Console patch with full serialization
+========================================================= */
+if (!window.__consolePatched) {
+  window.__consolePatched = true;
+
+  ["log", "warn", "error", "info", "debug"].forEach(level => {
+    const original = console[level];
+    let busy = false;
+
+    console[level] = function (...args) {
+      if (busy) return;
+      busy = true;
+
+      try {
+        // Recursive serializer
+        function serializeValue(v) {
+          try {
+            if (typeof v === "function") {
+              return {
+                __type: "function",
+                name: v.name || "(anonymous)",
+                body: v.toString()
+              };
+            } else if (typeof v === "object" && v !== null) {
+              const id = storeObject(v);
+              const props = {};
+              Object.getOwnPropertyNames(v).forEach(k => {
+                props[k] = serializeValue(v[k]);
+              });
+              return {
+                __type: "object",
+                id,
+                className: v.constructor?.name || "Object",
+                props
+              };
+            } else {
+              return { __type: "primitive", value: v };
+            }
+          } catch {
+            return { __type: "unavailable", value: "[unavailable]" };
+          }
+        }
+
+        const outArgs = args.map(serializeValue);
+
+        // Resolve user file + line
+        let loc = { file: null, line: null };
+        try {
+          const stack = new Error().stack?.split("\n") || [];
+          for (const l of stack) {
+            const m = l.match(/@(.*):(\d+):\d+/);
+            if (!m) continue;
+            if (m[1].includes("iframe")) continue;
+            loc = { file: m[1], line: Number(m[2]) };
+            break;
+          }
+        } catch {}
+
+        parent.postMessage({
+          type: "log",
+          level,
+          args: outArgs,
+          source: loc.file,
+          line: loc.line
+        }, "*");
+
+        original.apply(console, args);
+      } finally {
+        busy = false;
+      }
+    };
+  });
+}
+
+/* =========================================================
+   2️⃣ Object inspection (optional / also sends full data)
+========================================================= */
+window.addEventListener("message", e => {
+  const msg = e.data;
+  if (!msg || typeof msg !== "object") return;
+
+  if (msg.type === "inspect-object") {
+    const obj = __objectStore.get(msg.id);
+    if (!obj) return;
+
+    function serializeValue(v) {
+      try {
+        if (typeof v === "function") {
+          return {
+            __type: "function",
+            name: v.name || "(anonymous)",
+            body: v.toString()
+          };
+        } else if (typeof v === "object" && v !== null) {
+          const id = storeObject(v);
+          const props = {};
+          Object.getOwnPropertyNames(v).forEach(k => {
+            props[k] = serializeValue(v[k]);
+          });
+          return {
+            __type: "object",
+            id,
+            className: v.constructor?.name || "Object",
+            props
+          };
+        } else {
+          return { __type: "primitive", value: v };
+        }
+      } catch {
+        return { __type: "unavailable", value: "[unavailable]" };
+      }
+    }
+
+    const props = {};
+    Object.getOwnPropertyNames(obj).forEach(key => {
+      props[key] = serializeValue(obj[key]);
+    });
+
+    parent.postMessage({
+      type: "object-properties",
+      id: msg.id,
+      props,
+      hasPrototype: !!Object.getPrototypeOf(obj)
+    }, "*");
+  }
+});
+
+/* =========================================================
+   3️⃣ Error handling
+========================================================= */
+if (!window.__errorHandlersInstalled) {
+  window.__errorHandlersInstalled = true;
+  const seen = new Set();
+
+  function report(info) {
+    const key = info.message + info.line + info.source;
+    if (seen.has(key)) return;
+    seen.add(key);
+    parent.postMessage({ type: "error", ...info }, "*");
+  }
+
+  window.onerror = (msg, src, line, col, err) => {
+    report({
+      message: err?.message || msg,
+      source: src || null,
+      line: line || null,
+      col: col || null,
+      stack: err?.stack || null
+    });
+    return true;
+  };
+
+  window.onunhandledrejection = e => {
+    const r = e.reason;
+    report({
+      message: r?.message || String(r),
+      source: r?.fileName || null,
+      line: r?.lineNumber || null,
+      col: null,
+      stack: r?.stack || null
+    });
+  };
+}
+
+/* =========================================================
+   4️⃣ Bootstrap & update pipeline
+========================================================= */
+parent.postMessage({ type: "iframe-ready" }, "*");
+window.addEventListener("message", e => update(e.data));
+
+function update(data) {
+  loadHtml(data.html, () => {
+    loadCss(data.css);
+    loadJsFiles(data.scripts);
+  });
+}
+
+/* =========================================================
+   5️⃣ HTML + inline scripts
+========================================================= */
+function loadHtml(html, done) {
+  document.body.innerHTML = "";
+  document.body.insertAdjacentHTML("beforeend", html || "");
+  const scripts = Array.from(document.querySelectorAll("script"));
+  runScriptsInOrder(scripts, done);
+}
+
+function runScriptsInOrder(scripts, done) {
+  let i = 0;
+  function next() {
+    if (i >= scripts.length) return done && done();
+    const old = scripts[i++];
+    const s = document.createElement("script");
+    if (old.src) {
+      s.src = old.src;
+      s.onload = next;
+      s.onerror = next;
+    } else {
+      s.textContent = old.textContent;
+      next();
+    }
+    old.remove();
+    document.body.appendChild(s);
+  }
+  next();
+}
+
+/* =========================================================
+   6️⃣ CSS loading
+========================================================= */
+function loadCss(css) {
+  let style = document.getElementById("user-style");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "user-style";
+    document.head.appendChild(style);
+  }
+  style.textContent = css || "";
+}
+
+/* =========================================================
+   7️⃣ JS files loading
+========================================================= */
+function loadJsFiles(files) {
+  if (!files) return;
+
+  document.querySelectorAll("script[data-user]").forEach(s => s.remove());
+
+  files.forEach(f => {
+    const s = document.createElement("script");
+    s.dataset.user = "true";
+    s.dataset.name = f.name;
+    s.textContent =
+      (f.data || "") +
+      "\n//# sourceURL=" + (f.name || "user") + ".js";
+    document.body.appendChild(s);
+  });
+}
+</script>
+
+</body>
+</html>

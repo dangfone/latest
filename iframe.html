@@ -219,83 +219,119 @@ if (!window.__errorHandlersInstalled) {
   };
 }
 
+
 /* =========================================================
    4️⃣ Bootstrap & update pipeline
 ========================================================= */
+
 parent.postMessage({ type: "iframe-ready" }, "*");
-window.addEventListener("message", e => update(e.data));
+
+window.addEventListener("message", e => {
+  const data = e.data;
+  if (!data) return;
+  update(data);
+});
 
 function update(data) {
-  loadHtml(data.html, () => {
-    loadCss(data.css);
-    loadJsFiles(data.scripts);
+
+  loadHtml(data.html || "")
+  .then(()=>loadCss(data.css || ""))
+  .then(()=>loadJsFiles(data.scripts || []));
+
+}
+
+/* =========================================================
+   5️⃣ HTML Loading (wait for render cycle)
+========================================================= */
+
+function loadHtml(html){
+
+  return new Promise(resolve=>{
+
+    document.body.innerHTML = "";
+    document.body.insertAdjacentHTML("beforeend", html);
+
+    // wait 2 frames so DOM + layout stabilize
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(resolve);
+    });
+
   });
+
 }
 
 /* =========================================================
-   5️⃣ HTML + inline scripts
+   6️⃣ CSS Loading
 ========================================================= */
-function loadHtml(html, done) {
-  document.body.innerHTML = "";
-  document.body.insertAdjacentHTML("beforeend", html || "");
-  const scripts = Array.from(document.querySelectorAll("script"));
-  runScriptsInOrder(scripts, done);
-}
 
-function runScriptsInOrder(scripts, done) {
-  let i = 0;
-  function next() {
-    if (i >= scripts.length) return done && done();
-    const old = scripts[i++];
-    const s = document.createElement("script");
-    if (old.src) {
-      s.src = old.src;
-      s.onload = next;
-      s.onerror = next;
-    } else {
-      s.textContent = old.textContent;
-      next();
-    }
-    old.remove();
-    document.body.appendChild(s);
-  }
-  next();
-}
+function loadCss(css){
 
-/* =========================================================
-   6️⃣ CSS loading
-========================================================= */
-function loadCss(css) {
   let style = document.getElementById("user-style");
-  if (!style) {
+
+  if(!style){
     style = document.createElement("style");
     style.id = "user-style";
     document.head.appendChild(style);
   }
-  style.textContent = css || "";
+
+  style.textContent = css;
+
 }
 
 /* =========================================================
-   7️⃣ JS files loading
+   7️⃣ Script Loader (fully sequential)
 ========================================================= */
-function loadJsFiles(files) {
-  if (!files) return;
 
-  document.querySelectorAll("script[data-user]").forEach(s => s.remove());
+async function loadJsFiles(files){
 
-  files.forEach(f => {
+  // remove previous user scripts
+  document.querySelectorAll("script[data-user]").forEach(s=>s.remove());
+
+  for(const file of files){
+
+    await runScript(file);
+
+  }
+
+}
+
+function runScript(file){
+
+  return new Promise(resolve=>{
+
     const s = document.createElement("script");
+
     s.dataset.user = "true";
-    s.dataset.name = f.name;
-    s.textContent =
-      (f.data || "") +
-      "\n//# sourceURL=" + (f.name || "user") + ".js";
-    document.body.appendChild(s);
+    s.dataset.name = file.name || "user";
+
+    if(file.src){
+
+      s.src = file.src;
+
+      s.onload = resolve;
+      s.onerror = resolve;
+
+      document.head.appendChild(s);
+
+    }else{
+
+      s.textContent =
+        (file.data || "") +
+        "\n//# sourceURL=" + (file.name || "user") + ".js";
+
+      document.head.appendChild(s);
+
+      resolve();
+
+    }
+
   });
+
 }
 </script>
 
 </body>
 </html>
+
 
 

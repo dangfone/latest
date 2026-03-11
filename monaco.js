@@ -102,6 +102,11 @@ var ids=0
 		if(!this.tabID) return
 		await boss.dbBoss.setTabData(this.tabID,txt)
 	}
+
+	editor.clear = function(){
+		this.tabID = false
+		this.load("")
+	}
 	
 	ids++
 	console.log(boss)
@@ -513,6 +518,7 @@ boss.setEdiPos = function(ediD,d){
 	
 	
 }
+
 
 
 

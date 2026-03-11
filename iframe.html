@@ -22,77 +22,115 @@ function storeObject(obj) {
 }
 
 /* =========================================================
-   1️⃣ Console patch with full serialization
+   1️⃣ Console patch with proper stack detection
 ========================================================= */
 if (!window.__consolePatched) {
   window.__consolePatched = true;
 
-  ["log", "warn", "error", "info", "debug"].forEach(level => {
-    const original = console[level];
-    let busy = false;
+  const MAX_DEPTH = 2;
 
-    console[level] = function (...args) {
-      if (busy) return;
-      busy = true;
+  function serializeValue(v, depth = 0) {
+    try {
+      if (depth > MAX_DEPTH) {
+        return { __type: "max-depth" };
+      }
 
-      try {
-        // Recursive serializer
-        function serializeValue(v) {
+      if (typeof v === "function") {
+        return {
+          __type: "function",
+          name: v.name || "(anonymous)",
+          body: v.toString()
+        };
+      }
+
+      if (typeof v === "object" && v !== null) {
+        const id = storeObject(v);
+        const props = {};
+
+        for (const k of Object.getOwnPropertyNames(v).slice(0, 20)) {
           try {
-            if (typeof v === "function") {
-              return {
-                __type: "function",
-                name: v.name || "(anonymous)",
-                body: v.toString()
-              };
-            } else if (typeof v === "object" && v !== null) {
-              const id = storeObject(v);
-              const props = {};
-              Object.getOwnPropertyNames(v).forEach(k => {
-                props[k] = serializeValue(v[k]);
-              });
-              return {
-                __type: "object",
-                id,
-                className: v.constructor?.name || "Object",
-                props
-              };
-            } else {
-              return { __type: "primitive", value: v };
-            }
+            props[k] = serializeValue(v[k], depth + 1);
           } catch {
-            return { __type: "unavailable", value: "[unavailable]" };
+            props[k] = { __type: "unavailable" };
           }
         }
 
-        const outArgs = args.map(serializeValue);
-
-        // Resolve user file + line
-        let loc = { file: null, line: null };
-        try {
-          const stack = new Error().stack?.split("\n") || [];
-          for (const l of stack) {
-            const m = l.match(/@(.*):(\d+):\d+/);
-            if (!m) continue;
-            if (m[1].includes("iframe")) continue;
-            loc = { file: m[1], line: Number(m[2]) };
-            break;
-          }
-        } catch {}
-
-        parent.postMessage({
-          type: "log",
-          level,
-          args: outArgs,
-          source: loc.file,
-          line: loc.line
-        }, "*");
-
-        original.apply(console, args);
-      } finally {
-        busy = false;
+        return {
+          __type: "object",
+          id,
+          className: v.constructor?.name || "Object",
+          props
+        };
       }
+
+      return { __type: "primitive", value: v };
+
+    } catch {
+      return { __type: "unavailable", value: "[unavailable]" };
+    }
+  }
+
+  function getCallerLocation() {
+    try {
+      const stack = new Error().stack;
+      if (!stack) return { file: null, line: null };
+
+      const lines = stack.split("\n");
+
+      for (const line of lines) {
+
+        // Chrome format
+        let m = line.match(/\((.*):(\d+):(\d+)\)/);
+
+        // Firefox format
+        if (!m) {
+          m = line.match(/@(.*):(\d+):(\d+)/);
+        }
+
+        if (!m) continue;
+
+        const file = m[1];
+
+        // Skip internal frames
+        if (
+          file.includes("console") ||
+          file.includes("iframe") ||
+          file.includes("VM") ||
+          file.includes("about:blank")
+        ) continue;
+
+        return {
+          file,
+          line: Number(m[2])
+        };
+      }
+
+    } catch {}
+
+    return { file: null, line: null };
+  }
+
+  ["log", "warn", "error", "info", "debug"].forEach(level => {
+
+    const original = console[level];
+
+    console[level] = function (...args) {
+
+      const loc = getCallerLocation();
+
+      const outArgs = args.map(v => serializeValue(v));
+
+      parent.postMessage({
+        type: "log",
+        level,
+        args: outArgs,
+        source: loc.file,
+        line: loc.line
+      }, "*");
+
+      original.apply(console, args);
     };
+
   });
 }
 
@@ -264,3 +302,4 @@ function loadJsFiles(files) {
 
 </body>
 </html>
+

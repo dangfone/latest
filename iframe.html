@@ -71,45 +71,40 @@ if (!window.__consolePatched) {
   }
 
   function getCallerLocation() {
-    try {
-      const stack = new Error().stack;
-      if (!stack) return { file: null, line: null };
+  try {
+    const stack = new Error().stack;
+    if (!stack) return { file: null, line: null };
 
-      const lines = stack.split("\n");
+    const lines = stack.split("\n");
 
-      for (const line of lines) {
+    for (const line of lines) {
 
-        // Chrome format
-        let m = line.match(/\((.*):(\d+):(\d+)\)/);
+      // Chrome / Chromium
+      let m = line.match(/\(?([^\s()]+):(\d+):(\d+)\)?$/);
 
-        // Firefox format
-        if (!m) {
-          m = line.match(/@(.*):(\d+):(\d+)/);
-        }
-
-        if (!m) continue;
-
-        const file = m[1];
-
-        // Skip internal frames
-        if (
-          file.includes("console") ||
-          file.includes("iframe") ||
-          file.includes("VM") ||
-          file.includes("about:blank")
-        ) continue;
-
-        return {
-          file,
-          line: Number(m[2])
-        };
+      // Firefox
+      if (!m) {
+        m = line.match(/@(.*):(\d+):(\d+)/);
       }
 
-    } catch {}
+      if (!m) continue;
 
-    return { file: null, line: null };
-  }
+      const file = m[1];
+      const lineNumber = Number(m[2]);
 
+      // Skip THIS console patch file only
+      if (file.includes("iframe")) continue;
+
+      return {
+        file,
+        line: lineNumber
+      };
+    }
+
+  } catch {}
+
+  return { file: null, line: null };
+}
   ["log", "warn", "error", "info", "debug"].forEach(level => {
 
     const original = console[level];
@@ -302,4 +297,5 @@ function loadJsFiles(files) {
 
 </body>
 </html>
+
 

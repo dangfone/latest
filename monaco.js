@@ -352,7 +352,7 @@ boss.iframeB = {d:"",code:"",
 		console.log(d)
 		$(d).append("<div class='w0 h0'><div class='pad1em grab wFit'><div class='w30em h17em minH10em minW14em flex column bgDark  bor cont borCol31'>"
 			+"<div class='overlayD '></div>"
-			+"<iframe  src='iframe/iframe.html' class='w100p h100p iframe noBor' ></iframe>"
+			+"<iframe  src='iframe.html' class='w100p h100p iframe noBor' ></iframe>"
 		+"</div></div></div>")
 		this.d = $(d).find(".iframe")
 		console.log(this.d)
@@ -513,6 +513,7 @@ boss.setEdiPos = function(ediD,d){
 	
 	
 }
+
 
 
 

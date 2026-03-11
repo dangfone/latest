@@ -16,7 +16,7 @@ var boss ={
 		var arr = this.edis
 		console.log(arr)
 		for(var x=0; x < arr.length; x++){
-			arr[x].edi.load("")
+			arr[x].edi.clear()
 		}
 	},
 	
@@ -53,4 +53,5 @@ var boss ={
 	},
 	
 }
+
 

@@ -6,332 +6,263 @@
 <body>
 
 <script>
+
 /* =========================================================
-   0️⃣ Object registry (DevTools-style)
+   Console Bridge (DevTools style)
 ========================================================= */
+
+function installConsoleBridge(){
+
 const __objectStore = new Map();
 let __objectId = 0;
 
-function storeObject(obj) {
-  for (const [id, o] of __objectStore) {
-    if (o === obj) return id;
+function storeObject(obj){
+  for(const [id,o] of __objectStore){
+    if(o===obj) return id;
   }
-  const id = "obj_" + (++__objectId);
-  __objectStore.set(id, obj);
+  const id="obj_"+(++__objectId);
+  __objectStore.set(id,obj);
   return id;
 }
 
-/* =========================================================
-   1️⃣ Console patch with proper stack detection
-========================================================= */
-if (!window.__consolePatched) {
-  window.__consolePatched = true;
+function serializeValue(v,depth=0){
 
-  const MAX_DEPTH = 2;
+  if(depth>2) return {__type:"max-depth"};
 
-  function serializeValue(v, depth = 0) {
-    try {
-      if (depth > MAX_DEPTH) {
-        return { __type: "max-depth" };
-      }
+  try{
 
-      if (typeof v === "function") {
-        return {
-          __type: "function",
-          name: v.name || "(anonymous)",
-          body: v.toString()
-        };
-      }
-
-      if (typeof v === "object" && v !== null) {
-        const id = storeObject(v);
-        const props = {};
-
-        for (const k of Object.getOwnPropertyNames(v).slice(0, 20)) {
-          try {
-            props[k] = serializeValue(v[k], depth + 1);
-          } catch {
-            props[k] = { __type: "unavailable" };
-          }
-        }
-
-        return {
-          __type: "object",
-          id,
-          className: v.constructor?.name || "Object",
-          props
-        };
-      }
-
-      return { __type: "primitive", value: v };
-
-    } catch {
-      return { __type: "unavailable", value: "[unavailable]" };
-    }
-  }
-
-  function getCallerLocation() {
-  try {
-    const stack = new Error().stack;
-    if (!stack) return { file: null, line: null };
-
-    const lines = stack.split("\n");
-
-    for (const line of lines) {
-
-      // Chrome / Chromium
-      let m = line.match(/\(?([^\s()]+):(\d+):(\d+)\)?$/);
-
-      // Firefox
-      if (!m) {
-        m = line.match(/@(.*):(\d+):(\d+)/);
-      }
-
-      if (!m) continue;
-
-      const file = m[1];
-      const lineNumber = Number(m[2]);
-
-      // Skip THIS console patch file only
-      if (file.includes("iframe")) continue;
-
+    if(typeof v==="function"){
       return {
-        file,
-        line: lineNumber
+        __type:"function",
+        name:v.name||"(anonymous)",
+        body:v.toString()
       };
     }
 
-  } catch {}
+    if(typeof v==="object" && v!==null){
 
-  return { file: null, line: null };
-}
-  ["log", "warn", "error", "info", "debug"].forEach(level => {
+      const id=storeObject(v);
+      const props={};
 
-    const original = console[level];
-
-    console[level] = function (...args) {
-
-      const loc = getCallerLocation();
-
-      const outArgs = args.map(v => serializeValue(v));
-
-      parent.postMessage({
-        type: "log",
-        level,
-        args: outArgs,
-        source: loc.file,
-        line: loc.line
-      }, "*");
-
-      original.apply(console, args);
-    };
-
-  });
-}
-
-/* =========================================================
-   2️⃣ Object inspection (optional / also sends full data)
-========================================================= */
-window.addEventListener("message", e => {
-  const msg = e.data;
-  if (!msg || typeof msg !== "object") return;
-
-  if (msg.type === "inspect-object") {
-    const obj = __objectStore.get(msg.id);
-    if (!obj) return;
-
-    function serializeValue(v) {
-      try {
-        if (typeof v === "function") {
-          return {
-            __type: "function",
-            name: v.name || "(anonymous)",
-            body: v.toString()
-          };
-        } else if (typeof v === "object" && v !== null) {
-          const id = storeObject(v);
-          const props = {};
-          Object.getOwnPropertyNames(v).forEach(k => {
-            props[k] = serializeValue(v[k]);
-          });
-          return {
-            __type: "object",
-            id,
-            className: v.constructor?.name || "Object",
-            props
-          };
-        } else {
-          return { __type: "primitive", value: v };
+      for(const k of Object.getOwnPropertyNames(v).slice(0,20)){
+        try{
+          props[k]=serializeValue(v[k],depth+1);
+        }catch{
+          props[k]={__type:"unavailable"};
         }
-      } catch {
-        return { __type: "unavailable", value: "[unavailable]" };
       }
+
+      return {
+        __type:"object",
+        id,
+        className:v.constructor?.name||"Object",
+        props
+      };
+
     }
 
-    const props = {};
-    Object.getOwnPropertyNames(obj).forEach(key => {
-      props[key] = serializeValue(obj[key]);
+    return {__type:"primitive",value:v};
+
+  }catch{
+    return {__type:"unavailable"};
+  }
+
+}
+
+function getCallerLocation(){
+
+  try{
+
+    const stack=new Error().stack;
+    if(!stack) return {file:null,line:null};
+
+    const lines=stack.split("\n");
+
+    for(const line of lines){
+
+      let m=line.match(/\(?([^\s()]+):(\d+):(\d+)\)?$/);
+
+      if(!m) m=line.match(/@(.*):(\d+):(\d+)/);
+
+      if(!m) continue;
+
+      const file=m[1];
+      const lineNumber=Number(m[2]);
+
+      if(file.includes("iframe")) continue;
+
+      return {file,line:lineNumber};
+
+    }
+
+  }catch{}
+
+  return {file:null,line:null};
+
+}
+
+["log","warn","error","info","debug"].forEach(level=>{
+
+  const original=console[level];
+
+  console[level]=function(...args){
+
+    const loc=getCallerLocation();
+
+    const outArgs=args.map(v=>serializeValue(v));
+
+    parent.postMessage({
+      type:"log",
+      level,
+      args:outArgs,
+      source:loc.file,
+      line:loc.line
+    },"*");
+
+    original.apply(console,args);
+
+  };
+
+});
+
+
+/* =========================================================
+   Object inspection
+========================================================= */
+
+window.addEventListener("message",e=>{
+
+  const msg=e.data;
+
+  if(msg?.type==="inspect-object"){
+
+    const obj=__objectStore.get(msg.id);
+    if(!obj) return;
+
+    const props={};
+
+    Object.getOwnPropertyNames(obj).forEach(key=>{
+      try{
+        props[key]=serializeValue(obj[key]);
+      }catch{
+        props[key]={__type:"unavailable"};
+      }
     });
 
     parent.postMessage({
-      type: "object-properties",
-      id: msg.id,
-      props,
-      hasPrototype: !!Object.getPrototypeOf(obj)
-    }, "*");
+      type:"object-properties",
+      id:msg.id,
+      props
+    },"*");
+
   }
+
 });
 
+
 /* =========================================================
-   3️⃣ Error handling
+   Error forwarding
 ========================================================= */
-if (!window.__errorHandlersInstalled) {
-  window.__errorHandlersInstalled = true;
-  const seen = new Set();
 
-  function report(info) {
-    const key = info.message + info.line + info.source;
-    if (seen.has(key)) return;
-    seen.add(key);
-    parent.postMessage({ type: "error", ...info }, "*");
-  }
+window.onerror=(msg,src,line,col,err)=>{
 
-  window.onerror = (msg, src, line, col, err) => {
-    report({
-      message: err?.message || msg,
-      source: src || null,
-      line: line || null,
-      col: col || null,
-      stack: err?.stack || null
-    });
-    return true;
-  };
+  parent.postMessage({
+    type:"error",
+    message:err?.message||msg,
+    source:src||null,
+    line:line||null,
+    col:col||null,
+    stack:err?.stack||null
+  },"*");
 
-  window.onunhandledrejection = e => {
-    const r = e.reason;
-    report({
-      message: r?.message || String(r),
-      source: r?.fileName || null,
-      line: r?.lineNumber || null,
-      col: null,
-      stack: r?.stack || null
-    });
-  };
+};
+
+window.onunhandledrejection=e=>{
+
+  const r=e.reason;
+
+  parent.postMessage({
+    type:"error",
+    message:r?.message||String(r),
+    stack:r?.stack||null
+  },"*");
+
+};
+
 }
 
 
 /* =========================================================
-   4️⃣ Bootstrap & update pipeline
+   Parent communication
 ========================================================= */
 
-parent.postMessage({ type: "iframe-ready" }, "*");
+parent.postMessage({type:"iframe-ready"},"*");
 
-window.addEventListener("message", e => {
-  const data = e.data;
-  if (!data) return;
-  update(data);
+window.addEventListener("message",e=>{
+
+  const data=e.data;
+
+  if(data?.type==="run"){
+
+    rebuildRuntime(data);
+
+  }
+
 });
 
-function update(data) {
-
-  loadHtml(data.html || "")
-  .then(()=>loadCss(data.css || ""))
-  .then(()=>loadJsFiles(data.scripts || []));
-
-}
 
 /* =========================================================
-   5️⃣ HTML Loading (wait for render cycle)
+   Rebuild runtime (fresh JS environment)
 ========================================================= */
 
-function loadHtml(html){
+function rebuildRuntime(data){
 
-  return new Promise(resolve=>{
+  const html=data.html||"";
+  const css=data.css||"";
+  const files=data.scripts||[];
 
-    document.body.innerHTML = "";
-    document.body.insertAdjacentHTML("beforeend", html);
+  const userScripts=files.map(f=>{
 
-    // wait 2 frames so DOM + layout stabilize
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(resolve);
-    });
-
-  });
-
-}
-
-/* =========================================================
-   6️⃣ CSS Loading
-========================================================= */
-
-function loadCss(css){
-
-  let style = document.getElementById("user-style");
-
-  if(!style){
-    style = document.createElement("style");
-    style.id = "user-style";
-    document.head.appendChild(style);
-  }
-
-  style.textContent = css;
-
-}
-
-/* =========================================================
-   7️⃣ Script Loader (fully sequential)
-========================================================= */
-
-async function loadJsFiles(files){
-
-  // remove previous user scripts
-  document.querySelectorAll("script[data-user]").forEach(s=>s.remove());
-
-  for(const file of files){
-
-    await runScript(file);
-
-  }
-
-}
-
-function runScript(file){
-
-  return new Promise(resolve=>{
-
-    const s = document.createElement("script");
-
-    s.dataset.user = "true";
-    s.dataset.name = file.name || "user";
-
-    if(file.src){
-
-      s.src = file.src;
-
-      s.onload = resolve;
-      s.onerror = resolve;
-
-      document.head.appendChild(s);
-
-    }else{
-
-      s.textContent =
-        (file.data || "") +
-        "\n//# sourceURL=" + (file.name || "user") + ".js";
-
-      document.head.appendChild(s);
-
-      resolve();
-
+    if(f.src){
+      return `<script src="${f.src}"><\/script>`;
     }
 
-  });
+    return `<script>
+${f.data||""}
+//# sourceURL=${f.name||"user"}.js
+<\/script>`;
+
+  }).join("\n");
+
+
+  const doc=`
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>${css}</style>
+</head>
+<body>
+
+${html}
+
+<script>
+(${installConsoleBridge.toString()})();
+<\/script>
+
+${userScripts}
+
+</body>
+</html>
+`;
+
+  document.open();
+  document.write(doc);
+  document.close();
 
 }
+
 </script>
 
 </body>
 </html>
-
-
-

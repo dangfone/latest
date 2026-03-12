@@ -453,39 +453,72 @@ boss.iframeB = {d:"",code:"",
 	},
 	
 	sendCode:function(){
-		console.log("sendin codeee")
-		this.d[0].contentWindow.postMessage(this.code, "*");
+	    console.log("sending code")
+	
+	    this.d[0].contentWindow.postMessage({
+	        type:"run",
+	        html:this.code.html,
+	        css:this.code.css,
+	        scripts:this.code.scripts
+	    }, "*");
+
 	},
 	
-	runCode: async function(edi){
-		console.log("run code")
-		if(!boss.autoB.isOn()) return
-		var o = await boss.dbBoss.getCode()
-		this.code = await this.filterCode(o.tabs)
-		this.d[0].src = this.d[0].src;
-		
+	runCode: async function(){
+
+	    console.log("run code")
+	
+	    if(!boss.autoB.isOn()) return
+	
+	    const o = await boss.dbBoss.getCode()
+	
+	    this.code = await this.filterCode(o.tabs)
+		console.log(this.code)
+	    const iframe = this.d[0]
+	
+	    iframe.src = iframe.src
+	
+	    iframe.onload = () => {
+	
+	        this.sendCode()
+	
+	    }
 	},
 	
 	filterCode: async function(arr){
-		var order = await boss.srcChecker.getJsOrder()
-		console.log(order)
-		var o ={html:"",css:"",js:[],scripts:[]}
-		for(var x=0; x < arr.length; x++){
-			var type = arr[x].type
-			o[type] = arr[x].data
-			if(o.html && o.css){
-				break
-			}
-		}
-		
-		for(var x =0; x < order.length; x++){
-			o.js.push(order[x].data)
-			o.scripts.push(order[x])
-		}
-		
-		
-		return o
-	},
+
+	    const order = await boss.srcChecker.getJsOrder()
+	
+	    const out = {
+	        html:"",
+	        css:"",
+	        scripts:[]
+	    }
+	
+	    for(let x=0; x<arr.length; x++){
+	
+	        const type = arr[x].type
+	
+	        if(type==="html") out.html = arr[x].data
+	        if(type==="css")  out.css  = arr[x].data
+	
+	    }
+	
+	    // add javascript files in correct order
+	    for(let x=0; x<order.length; x++){
+	
+	        const file = order[x]
+	
+	        out.scripts.push({
+	            name:file.name || "js"+x,
+	            data:file.data
+	        })
+	
+	    }
+
+    	return out
+
+	}
 	
 	
 }
@@ -518,6 +551,7 @@ boss.setEdiPos = function(ediD,d){
 	
 	
 }
+
 
 
 

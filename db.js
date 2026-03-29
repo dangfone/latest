@@ -199,7 +199,11 @@ boss.setupDbBoss = function(){
 		setTabName: async function(id,n){
 			await db.tabs.update(id,{name:n})
 		},
-		
+				 
+		setTabLine : async function(id,line){
+			await db.tabs.update(id,{line:line})
+		},
+				 
 		setTabData: async function(id,data){
 			await db.tabs.update(id,{data:data})
 		},

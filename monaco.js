@@ -186,7 +186,10 @@ $(function() {
 		  });
 		});
 		
-
+		editor.onDidChangeCursorPosition((e) => {
+		  console.log("Line:", e.position.lineNumber);
+		});
+		
 		editor.onDidChangeModelContent((e) => {
 		  const model = editor.getModel();
 		  const pos = editor.getPosition();

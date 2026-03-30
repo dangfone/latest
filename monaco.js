@@ -75,7 +75,7 @@ var ids=0
   		foldingStrategy: "indentation", 
 		stickyScroll: {
 		  enabled: false
-		}
+		},
 				
 		overviewRulerLanes: 0,          // Removes the lane tracks
 		overviewRulerBorder: false,     // Specifically removes the ruler's border line

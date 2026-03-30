@@ -91,7 +91,7 @@ var ids=0
 		this.tabID = id
 	}
 	
-	editor.load = function(txt){
+	editor.load2 = function(txt){
 		console.log(txt)
 		editor.setValue(txt)
 		this.setLine()

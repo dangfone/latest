@@ -55,14 +55,7 @@ var ids=0
 	editorDiv.style.border = "1px solid #444";
 	ediC.appendChild(editorDiv);
 	
-	monaco.languages.registerFoldingRangeProvider("javascript", {
-	  provideFoldingRanges: () => []
-	});
 	
-	monaco.languages.registerFoldingRangeProvider("typescript", {
-	  provideFoldingRanges: () => []
-	});
-
 		// Create Monaco editor
 	const editor = monaco.editor.create(editorDiv, {
 		value: initialValue,             // FIXED: use initialValue
@@ -80,6 +73,9 @@ var ids=0
 		folding: false,
 		showFoldingControls: "never",  
   		foldingStrategy: "indentation", 
+		stickyScroll: {
+		  enabled: false
+		}
 				
 		overviewRulerLanes: 0,          // Removes the lane tracks
 		overviewRulerBorder: false,     // Specifically removes the ruler's border line
@@ -95,9 +91,7 @@ var ids=0
 				
 	});
 
-	editor.updateOptions({
-	  folding: false
-	});
+	
 	editor.setHiddenAreas([]);
 	editor.setTab = function(id){
 		this.tabID = id

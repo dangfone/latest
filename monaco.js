@@ -91,10 +91,12 @@ var ids=0
 		this.tabID = id
 	}
 	
-	editor.load2 = function(txt){
-		console.log(txt)
+	editor.load = function(txt,line){
+		console.log(line)
 		editor.setValue(txt)
-		this.setLine()
+		if(line){
+			this.setLine(line)
+		}
 	}	
 	
 	editor.saveMyStuff = async function(txt){
@@ -108,11 +110,11 @@ var ids=0
 		await boss.dbBoss.setTabLine(this.tabID,line)
 	}
 	  
-	editor.setLine = async function(){
+	editor.setLine = function(line){
 		console.log('setting line')
-		var t = await dbBoss.getTab(this.tabID)
-		editor.setPosition({ lineNumber: t.line, column: 1 });
-		editor.revealLineInCenter(t.line);
+		
+		editor.setPosition({ lineNumber: line, column: 1 });
+		editor.revealLineInCenter(line);
 	}
 	editor.clear = function(){
 		this.tabID = false

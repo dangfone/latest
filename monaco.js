@@ -94,6 +94,7 @@ var ids=0
 	editor.load = function(txt){
 		console.log(txt)
 		editor.setValue(txt)
+		this.setLine()
 	}	
 	
 	editor.saveMyStuff = async function(txt){
@@ -103,6 +104,15 @@ var ids=0
 		await boss.dbBoss.setTabData(this.tabID,txt)
 	}
 
+	editor.saveLineInfo = async function(line){
+		await boss.dbBoss.setTabLine(this.tabID,line)
+	}
+	  
+	editor.setLine = async function(){
+		var t = await dbBoss.getTab(this.tabID)
+		editor.setPosition({ lineNumber: t.line, column: 1 });
+		editor.revealLineInCenter(t.line);
+	}
 	editor.clear = function(){
 		this.tabID = false
 		this.load("")
@@ -188,6 +198,7 @@ $(function() {
 		
 		editor.onDidChangeCursorPosition((e) => {
 		  console.log("Line:", e.position.lineNumber);
+			
 		});
 		
 		editor.onDidChangeModelContent((e) => {

@@ -72,6 +72,8 @@ var ids=0
 		formatOnType: true,
 		autoSurround: "languageDefined",
 		folding: false,
+		showFoldingControls: "never",  
+  		foldingStrategy: "indentation", 
 				
 		overviewRulerLanes: 0,          // Removes the lane tracks
 		overviewRulerBorder: false,     // Specifically removes the ruler's border line

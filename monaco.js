@@ -109,6 +109,7 @@ var ids=0
 	}
 	  
 	editor.setLine = async function(){
+		console.log('setting line')
 		var t = await dbBoss.getTab(this.tabID)
 		editor.setPosition({ lineNumber: t.line, column: 1 });
 		editor.revealLineInCenter(t.line);

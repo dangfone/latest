@@ -94,6 +94,10 @@ var ids=0
 		}
 				
 	});
+
+	editor.updateOptions({
+	  folding: false
+	});
 	editor.setHiddenAreas([]);
 	editor.setTab = function(id){
 		this.tabID = id

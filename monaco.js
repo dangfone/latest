@@ -107,6 +107,7 @@ var ids=0
 	}
 
 	editor.saveLineInfo = async function(line){
+		console.log(line)
 		await boss.dbBoss.setTabLine(this.tabID,line)
 	}
 	  

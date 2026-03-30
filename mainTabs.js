@@ -104,7 +104,7 @@ boss.setupMainTabs = function(){
 				var tab = lastArr[type]
 				var edi = edis[x].edi
 				edi.setTab(tab.id)
-				edi.load(tab.data)
+				edi.load(tab.data,tab.line)
 			}
 			
 			//load js tabs

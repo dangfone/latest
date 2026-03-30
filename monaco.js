@@ -202,7 +202,7 @@ $(function() {
 		
 		editor.onDidChangeCursorPosition((e) => {
 		  console.log("Line:", e.position.lineNumber);
-			
+			editor.saveLineInfo(e.position.lineNumber)
 		});
 		
 		editor.onDidChangeModelContent((e) => {

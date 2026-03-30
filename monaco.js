@@ -91,6 +91,12 @@ var ids=0
 				
 	});
 
+	editor.updateOptions({
+	  stickyScroll: {
+	    enabled: false
+	  }
+	});
+
 	
 	editor.setHiddenAreas([]);
 	editor.setTab = function(id){

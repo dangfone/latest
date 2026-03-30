@@ -55,7 +55,13 @@ var ids=0
 	editorDiv.style.border = "1px solid #444";
 	ediC.appendChild(editorDiv);
 	
+	monaco.languages.registerFoldingRangeProvider("javascript", {
+	  provideFoldingRanges: () => []
+	});
 	
+	monaco.languages.registerFoldingRangeProvider("typescript", {
+	  provideFoldingRanges: () => []
+	});
 
 		// Create Monaco editor
 	const editor = monaco.editor.create(editorDiv, {

@@ -120,6 +120,8 @@ var ids=0
 
 	editor.saveLineInfo = async function(line){
 		console.log(line)
+		console.log(this)
+		console.log('is this working')
 		console.log(this.settingLine)
 		if(this.settingLine) return
 		await boss.dbBoss.setTabLine(this.tabID,line)

@@ -120,14 +120,16 @@ var ids=0
 
 	editor.saveLineInfo = async function(line){
 		console.log(line)
+		if(this.settingLine) return
 		await boss.dbBoss.setTabLine(this.tabID,line)
 	}
 	  
 	editor.setLine = function(line){
 		console.log('setting line')
-		
+		this.settingLine = true
 		editor.setPosition({ lineNumber: line, column: 1 });
 		editor.revealLineInCenter(line);
+		this.settingLine = false
 	}
 	editor.clear = function(){
 		this.tabID = false

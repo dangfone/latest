@@ -124,7 +124,8 @@ var ids=0
 		if(this.settingLine) return
 		await boss.dbBoss.setTabLine(this.tabID,line)
 	}
-	  
+
+	editor.settingLine = false
 	editor.setLine = function(line){
 		console.log('setting line')
 		this.settingLine = true

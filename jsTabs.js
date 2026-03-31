@@ -119,7 +119,7 @@ boss.setupJsTabs = function(){
 			
 			edi.setTab(tab.id)
 			var t = await boss.dbBoss.getTab(tab.id)
-			edi.load(t.data)
+			edi.load(t.data,tab.line)
 			await boss.dbBoss.setProjectLastTab(tab)
 			
 		},

@@ -178,6 +178,7 @@ $(function() {
 		}
 		
 		editor.setLine = function(line){
+			if(!line) line = 1
 			editor.setPosition({ lineNumber: line, column: 1 });
             editor.revealLineInCenter(line);
 		}

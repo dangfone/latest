@@ -1,7 +1,7 @@
 require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs' }});
   
   require(["vs/editor/editor.main"], function () {
-  console.log("Monaco loaded");
+
   
   
   //var p = document.getElementsByClassName("edisC")[0];
@@ -28,121 +28,58 @@ var ids=0
   // -----------------------------
   // Function to create editor
   // -----------------------------
-  function createEdi({ language, initialValue = "", parent, theme = "solidLine" }) {
-	 
-	var wrapC = document.createElement("div")
-	wrapC.classList.add("w0","h0") 
-	 parent.appendChild(wrapC)
-	 
-	var grabD = document.createElement("div")
-	grabD.classList.add("pad1em","flexMe","grab","wFit","hFit","grab")
-	wrapC.appendChild(grabD)
-	 
-	var wrap = document.createElement("div")
-	wrap.classList.add("w30em","h17em","minH10em", "minW14em", "flex", "column","bgDark","bor","borCol31")
-	grabD.appendChild(wrap)
-	
-	var titleC = document.createElement("div")
-	titleC.classList.add("h3em","w100p","flex","col8c")
-	wrap.appendChild(titleC)
-	
-	var ediC = document.createElement("div")
-	ediC.classList.add("flex1","overflow")
-	wrap.appendChild(ediC)
-	
-	const editorDiv = document.createElement("div");
-	editorDiv.classList.add("w100p","h100p");
-	editorDiv.style.border = "1px solid #444";
-	ediC.appendChild(editorDiv);
-	
-	
-		// Create Monaco editor
-	const editor = monaco.editor.create(editorDiv, {
-		value: initialValue,             // FIXED: use initialValue
-		language: language,
-		theme: theme,
-		automaticLayout: true,
-		scrollBeyondLastLine: false,
-		minimap: { enabled: false },
-		renderLineHighlight: "line",
-		matchBrackets: "never",
-		autoClosingBrackets: 'always', // Essential for < > pairs
-		autoClosingQuotes: 'always',
-		formatOnType: true,
-		autoSurround: "languageDefined",
-		folding: false,
-		showFoldingControls: "never",  
-  		foldingStrategy: "indentation", 
-		stickyScroll: {
-		  enabled: false
-		},
-				
-		overviewRulerLanes: 0,          // Removes the lane tracks
-		overviewRulerBorder: false,     // Specifically removes the ruler's border line
-		hideCursorInOverviewRuler: true,
-		
-		scrollbar: {
-			useShadows: false,             // REMOVES the thin border/line effect
-			verticalScrollbarSize: 8,
-			horizontalScrollbarSize: 8,
-			verticalSliderSize: 6,
-			horizontalSliderSize: 6
-		}
-				
-	});
+function createEdi({ language, initialValue = "", parent, theme = "solidLine" }) {
 
-	editor.updateOptions({
-	  stickyScroll: {
-	    enabled: false
-	  }
-	});
+    var wrapC = document.createElement("div")
+    wrapC.classList.add("w0","h0") 
+    parent.appendChild(wrapC)
+    
+    var grabD = document.createElement("div")
+    grabD.classList.add("pad1em","flexMe","grab","wFit","hFit","grab")
+    wrapC.appendChild(grabD)
+    
+    var wrap = document.createElement("div")
+    wrap.classList.add("w30em","h17em","minH10em", "minW14em", "flex", "column","bgDark","bor","borCol31")
+    grabD.appendChild(wrap)
+    
+    var titleC = document.createElement("div")
+    titleC.classList.add("h3em","w100p","flex","col8c")
+    wrap.appendChild(titleC)
+    
+    var ediC = document.createElement("div")
+    ediC.classList.add("flex1","overflow")
+    wrap.appendChild(ediC)
+    
+    const editorDiv = document.createElement("div");
+    editorDiv.classList.add("w100p","h100p");
+    ediC.appendChild(editorDiv);
 
-	
-	editor.setHiddenAreas([]);
+    const editor = monaco.editor.create(editorDiv, {
+        value: initialValue,
+        language: language,
+        theme: theme,
+        automaticLayout: true,
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+		folding:false,
+		stickyScroll: { enabled: false }
+    });
+
 	editor.setTab = function(id){
 		this.tabID = id
 	}
-	
-	editor.load = function(txt,line){
-		console.log(line)
-		editor.setValue(txt)
-		if(line){
-			this.setLine(line)
-		}
-	}	
-	
-	editor.saveMyStuff = async function(txt){
-		console.log("trying to save stuff")
-		console.log(this.tabID)
-		if(!this.tabID) return
-		await boss.dbBoss.setTabData(this.tabID,txt)
-	}
 
-	editor.saveLineInfo = async function(line){
-		console.log(line)
-		console.log(this)
-		console.log('is this working')
-		console.log(this.settingLine)
-		if(this.settingLine) return
-		await boss.dbBoss.setTabLine(this.tabID,line)
-	}
+   
 
-	editor.settingLine = false
-	editor.setLine = function(line){
-		console.log('setting line')
-		this.settingLine = true
-		editor.setPosition({ lineNumber: line, column: 1 });
-		editor.revealLineInCenter(line);
-		this.settingLine = false
-	}
-	editor.clear = function(){
-		this.tabID = false
-		this.load("")
-	}
-	
-	ids++
-	console.log(boss)
-	return {edi:editor,c:ediC,d:editorDiv,wrap:wrap,titleC:titleC, grab:grabD,p:parent};
+    return {
+        edi: editor,
+        c: ediC,
+        d: editorDiv,
+        wrap: wrap,
+        titleC: titleC,
+        grab: grabD,
+        p: parent
+    };
 }
 
 $(function() {
@@ -178,7 +115,7 @@ $(function() {
 	setupEdiEvents(jsEditor)
 	
 	loaded()
-	console.log(boss.edis)
+	//console.log(boss.edis)
 	//boss.resetEdiPos()
 })
 	
@@ -218,12 +155,40 @@ $(function() {
 		  });
 		});
 		
-		editor.onDidChangeCursorPosition((e) => {
-		  console.log("Line:", e.position.lineNumber);
-			editor.saveLineInfo(e.position.lineNumber)
-		});
+		editor.load = function(txt,line){
+			console.log(line)
+			editor.setValue(txt);
+			editor.setLine(line)
+		}
+
+		editor.onKeyUp(function(e){
+			console.log('key up!')
+			const position = editor.getPosition();
+    		const line = position.lineNumber;
+			
+			editor.saveLine(line)
+		})
+
+		editor.onMouseUp((e) => {
+    		editor.saveLine(e.target.position.lineNumber);
+		})
+
+		editor.saveLine = async function(line){
+			await boss.dbBoss.setTabLine(editor.tabID, line);
+		}
+		
+		editor.setLine = function(line){
+			editor.setPosition({ lineNumber: line, column: 1 });
+            editor.revealLineInCenter(line);
+		}
+
+		editor.saveMyStuff = async function(txt){
+			if(!this.tabID) return
+        	await boss.dbBoss.setTabData(this.tabID,txt)
+		}
 		
 		editor.onDidChangeModelContent((e) => {
+			if (editor.isProgrammaticMove) return;
 		  const model = editor.getModel();
 		  const pos = editor.getPosition();
 
@@ -264,15 +229,15 @@ $(function() {
 		  }
 		  
 		  var txt = editor.getValue()
-		  console.log(txt)
-		  console.log("add saving function here!")
+		  //console.log(txt)
+		
 		  editor.saveMyStuff(txt)
 		  
 		  
 		});
 		
 		editor.onKeyUp((e) => {
-		  console.log('Key up:', e.browserEvent.key);
+		  //console.log('Key up:', e.browserEvent.key);
 		  boss.iframeB.runCode(editor)
 		});
 		
@@ -285,7 +250,7 @@ $(function() {
 		var wrap = $(obj.wrap)
 		var grab = $(obj.grab)
 		var titleC = $(obj.titleC)
-		console.log(obj)
+		
 		
 		var lang = obj.edi.getModel().getLanguageId()
 		var iconD = boss.leftMBoss.addD($(".leftM"),icons.getCode("1.8em",lang),"show/hide "+lang +" editor")
@@ -317,7 +282,7 @@ $(function() {
 				boss.setTopD(wrap)
 			},
 			resize:function(){
-				console.log(obj)
+				
 				if(!dragged){
 					$(obj.p).height($(this).height())
 					$(obj.p).width($(this).width())
@@ -371,7 +336,7 @@ $(function() {
 		})
 		
 		var tabs = titleC.find(".tabStuff")
-		console.log(tabs)
+		
 		var tabM =''
 		if(title === "javascript"){
 			
@@ -389,14 +354,13 @@ $(function() {
 
 boss.iframeB = {d:"",code:"",
 	addD:function(d){
-		console.log("add iframe!")
-		console.log(d)
+		
 		$(d).append("<div class='w0 h0'><div class='pad1em grab wFit'><div class='w30em h17em minH10em minW14em flex column bgDark  bor cont borCol31'>"
 			+"<div class='overlayD '></div>"
 			+"<iframe  src='iframe.html' class='w100p h100p iframe noBor' ></iframe>"
 		+"</div></div></div>")
 		this.d = $(d).find(".iframe")
-		console.log(this.d)
+	
 		var iframe = this.d[0]
 		
 		var cont = $(d).find(".cont")
@@ -430,10 +394,10 @@ boss.iframeB = {d:"",code:"",
 
 			const data = e.data;
 			if (!data || typeof data !== "object") return;
-				console.log(data)
+				
 			switch (data.type) {
 				case "iframe-ready":
-				  console.log("Iframe ready");
+				  
 				  boss.iframeB.sendCode();
 				  break;
 
@@ -459,9 +423,8 @@ boss.iframeB = {d:"",code:"",
 				default: break;
 			  }
 			 if(boss.iframeB.edi){
-				 console.log("focus!")
-				 console.log(boss.iframeB.edi)
-				boss.iframeB.edi.setPosition({ lineNumber: 0, column: 0 });
+				
+				//boss.iframeB.edi.setPosition({ lineNumber: 1, column: 1 });
 				boss.iframeB.edi.focus() 
 			 }
 		  
@@ -478,19 +441,18 @@ boss.iframeB = {d:"",code:"",
 	},
 	
 	findScript:function(txt){
-		console.log(this.code)
+	
 		var arr = this.code.scripts
 		
 		for(var x =0; x < arr.length; x++){
 			if(txt.indexOf(arr[x].name) !== -1){
-				console.log(arr[x].name)
+				//console.log(arr[x].name)
 			}
 		}
 	},
 	
 	sendCode:function(){
-	    console.log("sending code")
-	
+	   
 	    this.d[0].contentWindow.postMessage({
 	        type:"run",
 	        html:this.code.html,
@@ -502,14 +464,14 @@ boss.iframeB = {d:"",code:"",
 	
 	runCode: async function(){
 
-	    console.log("run code")
+	   
 	
 	    if(!boss.autoB.isOn()) return
 	
 	    const o = await boss.dbBoss.getCode()
 	
 	    this.code = await this.filterCode(o.tabs)
-		console.log(this.code)
+		
 	    const iframe = this.d[0]
 	
 	    iframe.src = iframe.src
@@ -561,8 +523,7 @@ boss.iframeB = {d:"",code:"",
 
 
 boss.resetEdiPos = function(){
-	console.log(this.edis)
-	//posD
+	
 	var arr = this.edis
 	for(var x =0; x < arr.length; x++){
 		//arr[x].edi.posD
@@ -574,8 +535,6 @@ boss.resetEdiPos = function(){
 
 
 boss.setEdiPos = function(ediD,d){
-	console.log(d)
-	console.log(ediD)
 	
 	
 	var targetPos = d.position();

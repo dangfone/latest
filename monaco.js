@@ -154,6 +154,11 @@ $(function() {
 			renderLineHighlight: "line" // restore line highlight
 		  });
 		});
+
+		 editor.clear = function(){
+	        this.tabID = false
+	        this.load("")
+   		 }
 		
 		editor.load = function(txt,line){
 			console.log(line)

@@ -261,9 +261,12 @@ $(function() {
 		var lang = obj.edi.getModel().getLanguageId()
 		var iconD = boss.leftMBoss.addD($(".leftM"),icons.getCode("1.8em",lang),"show/hide "+lang +" editor")
 
-		function getCss(){
-			var pos = grab[0].getBoundingClientRect()
-			console.log(pos)
+		async function getCss(){
+			var css = grab[0].getBoundingClientRect()
+			console.log(css)
+			var r = JSON.stringify({left:css.left, top:css.top,height:css.height,width:css.width})
+			console.log(r)
+			await boss.dbBoss.setCss(obj.id,r)
 		}
 		
 		var o ={

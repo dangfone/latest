@@ -110,9 +110,9 @@ $(function() {
 	
 	
 	
-	setupEdiEvents(htmlEditor)
-	setupEdiEvents(cssEditor)
-	setupEdiEvents(jsEditor)
+	setupEdiEvents(htmlEditor,'html1')
+	setupEdiEvents(cssEditor,'css1')
+	setupEdiEvents(jsEditor,'js1')
 	
 	loaded()
 	//console.log(boss.edis)
@@ -134,8 +134,8 @@ $(function() {
 	}
 	
 	
-	function setupEdiEvents(obj){
-		
+	function setupEdiEvents(obj,id){
+		obj.id =id
 		$(obj.d).css("border-color","transparent")
 		
 		setupEdiC(obj)
@@ -260,6 +260,11 @@ $(function() {
 		
 		var lang = obj.edi.getModel().getLanguageId()
 		var iconD = boss.leftMBoss.addD($(".leftM"),icons.getCode("1.8em",lang),"show/hide "+lang +" editor")
+
+		function getCss(){
+			var pos = wrap.getBoundingClientRect()
+			console.log(pos)
+		}
 		
 		var o ={
 			show:function(){
@@ -296,6 +301,7 @@ $(function() {
 			},
 			stop:function(){
 				boss.iframeB.overlayOff()
+				getCss()
 			}
 		})
 		grab.draggable({
@@ -306,6 +312,7 @@ $(function() {
 			},
 			stop:function(){
 				boss.iframeB.overlayOff()
+				getCss()
 			}
 			
 			
@@ -539,7 +546,7 @@ boss.resetEdiPos = function(){
 	
 }
 
-
+//update this
 boss.setEdiPos = function(ediD,d){
 	
 	

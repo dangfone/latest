@@ -258,9 +258,12 @@ boss.setupDbBoss = function(){
 
 		getCss: async function(id){
 			console.log('getting css')
-			var o = await db.css.get(id).css
+			var arr = await db.css.toArray()
+			console.log(arr)
+			var o = await db.css.get(id)
+			console.log(o)
 			if(o){
-				return  JSON.parse(o)
+				return  JSON.parse(o.css)
 			}
 		},
 		getAllCss: async function(){

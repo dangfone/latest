@@ -10,7 +10,8 @@ boss.setupDbBoss = function(){
 				folders: "++id, name,pID",
 				tabs: "++id,name,type,data,date,line,open",
 				info:"++id,name,last,proN,order,autosave",
-				lastTabs:"++id,name,html,css,javascript"
+				lastTabs:"++id,name,html,css,javascript",
+				css:"divID,css"
 				
 			})
 			//db.folders.clear()
@@ -249,9 +250,17 @@ boss.setupDbBoss = function(){
 		setAutosave:async function(t){
 			await db.info.update(1,{autosave:t})
 		},
+
+		//css:"divID,css"
+		setCss: async function(id,css){
+			await db.css.put({divID:id,css:css})
+		},
+				 
+		getAllCss: async function(){
+			return await db.css.toArray()
+		},
 		
 		
-			
 		
 		
 		deleteAll:async function(){

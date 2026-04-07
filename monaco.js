@@ -416,7 +416,7 @@ boss.iframeB = {d:"",code:"",
 			
 			var r = JSON.stringify({left:grab.css('left'), top:grab.css('top'),height:grab.height(),width:grab.width()})
 			console.log(r)
-			await boss.dbBoss.setCss(obj.id,r)
+			await boss.dbBoss.setCss(id,r)
 		}
 
 		

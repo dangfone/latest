@@ -262,7 +262,7 @@ $(function() {
 		var iconD = boss.leftMBoss.addD($(".leftM"),icons.getCode("1.8em",lang),"show/hide "+lang +" editor")
 
 		function getCss(){
-			var pos = wrap.getBoundingClientRect()
+			var pos = grab[0].getBoundingClientRect()
 			console.log(pos)
 		}
 		

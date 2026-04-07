@@ -266,6 +266,7 @@ $(function() {
 		obj.edi.setCss = async function(){
 			var o = await boss.dbBoss.getCss(obj.id)
 			console.log(o)
+			if(!o) return
 			grab.css({
 			  	position: 'relative',
 			  	top: o.top,

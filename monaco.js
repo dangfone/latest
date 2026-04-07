@@ -271,8 +271,8 @@ $(function() {
 			  	position: 'relative',
 			  	top: o.top,
 				left: o.left,
-				height:o.height,
-				width:o.width
+				//height:o.height,
+				//width:o.width
 			});
 		}
 		obj.edi.setCss()

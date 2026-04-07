@@ -246,6 +246,8 @@ $(function() {
 		  //console.log('Key up:', e.browserEvent.key);
 		  boss.iframeB.runCode(editor)
 		});
+
+		
 		
 		
 			
@@ -261,6 +263,19 @@ $(function() {
 		var lang = obj.edi.getModel().getLanguageId()
 		var iconD = boss.leftMBoss.addD($(".leftM"),icons.getCode("1.8em",lang),"show/hide "+lang +" editor")
 
+		obj.edi.setCss = async function(){
+			var o = await boss.dbBoss.getCss(obj.id)
+			console.log(o)
+			grab.css({
+			  	position: 'relative',
+			  	top: o.top,
+				left: o.left,
+				height:o.height,
+				width:o.width
+			});
+		}
+		obj.edi.setCss()
+		
 		async function getCss(){
 			var css = grab[0].getBoundingClientRect()
 			console.log(css)

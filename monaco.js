@@ -396,9 +396,10 @@ boss.iframeB = {d:"",code:"",
 		
 		var cont = $(d).find(".cont")
 		var grab = $(d)
+		var id = 'preview1'
 
-		obj.edi.setCss = async function(){
-			var o = await boss.dbBoss.getCss(obj.id)
+		setCss = async function(){
+			var o = await boss.dbBoss.getCss(id)
 			console.log(o)
 			if(!o) return
 			grab.css({
@@ -409,7 +410,7 @@ boss.iframeB = {d:"",code:"",
 				width:o.width
 			});
 		}
-		obj.edi.setCss()
+		setCss()
 		
 		async function getCss(){
 			
@@ -427,6 +428,7 @@ boss.iframeB = {d:"",code:"",
 			
 			stop:function(){
 				boss.iframeB.overlayOff()
+				getCss()
 			}
 		})
 		grab.draggable({
@@ -437,6 +439,7 @@ boss.iframeB = {d:"",code:"",
 			
 			stop:function(){
 				boss.iframeB.overlayOff()
+				getCss()
 			}
 		})
 		

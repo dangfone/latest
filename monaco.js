@@ -278,9 +278,8 @@ $(function() {
 		obj.edi.setCss()
 		
 		async function getCss(){
-			var css = grab[0].getBoundingClientRect()
-			console.log(css)
-			var r = JSON.stringify({left:css.left, top:css.top,height:css.height,width:css.width})
+			
+			var r = JSON.stringify({left:grab.css('left'), top:grab.css('top'),height:grab.height(),width:grab.width()})
 			console.log(r)
 			await boss.dbBoss.setCss(obj.id,r)
 		}

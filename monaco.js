@@ -395,7 +395,30 @@ boss.iframeB = {d:"",code:"",
 		var iframe = this.d[0]
 		
 		var cont = $(d).find(".cont")
-		var drag = $(d)
+		var grab = $(d)
+
+		obj.edi.setCss = async function(){
+			var o = await boss.dbBoss.getCss(obj.id)
+			console.log(o)
+			if(!o) return
+			grab.css({
+			  	position: 'relative',
+			  	top: o.top,
+				left: o.left,
+				height:o.height,
+				width:o.width
+			});
+		}
+		obj.edi.setCss()
+		
+		async function getCss(){
+			
+			var r = JSON.stringify({left:grab.css('left'), top:grab.css('top'),height:grab.height(),width:grab.width()})
+			console.log(r)
+			await boss.dbBoss.setCss(obj.id,r)
+		}
+
+		
 		cont.resizable({
 			start:function(){
 				boss.setTopD($(d))
@@ -406,7 +429,7 @@ boss.iframeB = {d:"",code:"",
 				boss.iframeB.overlayOff()
 			}
 		})
-		drag.draggable({
+		grab.draggable({
 			start:function(){
 				boss.setTopD($(d))
 				boss.iframeB.overlayOn()

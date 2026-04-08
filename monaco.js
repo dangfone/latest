@@ -264,22 +264,24 @@ $(function() {
 		var iconD = boss.leftMBoss.addD($(".leftM"),icons.getCode("1.8em",lang),"show/hide "+lang +" editor")
 
 		obj.edi.setCss = async function(){
-			var o = await boss.dbBoss.getCss(obj.id)
+			var ob = await boss.dbBoss.getCss(obj.id)
 			console.log(o)
-			if(!o) return
+			if(!ob) return
 			grab.css({
 			  	position: 'relative',
-			  	top: o.top,
-				left: o.left,
-				height:o.height,
-				width:o.width
+			  	top: ob.top,
+				left: ob.left,
 			});
+
+			wrap.css({height:ob.height,
+				width:ob.width})
+			
 		}
 		obj.edi.setCss()
 		
 		async function getCss(){
 			
-			var r = JSON.stringify({left:grab.css('left'), top:grab.css('top'),height:grab.height(),width:grab.width()})
+			var r = JSON.stringify({left:grab.css('left'), top:grab.css('top'),height:wrap.height(),width:wrap.width()})
 			console.log(r)
 			await boss.dbBoss.setCss(obj.id,r)
 		}

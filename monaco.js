@@ -280,9 +280,7 @@ $(function() {
 		obj.edi.setCss()
 		
 		async function getCss(){
-			
 			var r = JSON.stringify({left:grab.css('left'), top:grab.css('top'),height:wrap.height(),width:wrap.width()})
-			console.log(r)
 			await boss.dbBoss.setCss(obj.id,r)
 		}
 		
@@ -408,9 +406,14 @@ boss.iframeB = {d:"",code:"",
 			  	position: 'relative',
 			  	top: o.top,
 				left: o.left,
+				
+			});
+
+			cont.css({
 				height:o.height,
 				width:o.width
-			});
+			})
+			boss.setTopD($(d))
 		}
 		setCss()
 		

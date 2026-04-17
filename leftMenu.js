@@ -49,6 +49,7 @@ boss.setupExportFiles = function(d){
 			txt +=makeTxt(arr[x])
 		}
 		console.log(txt)
+		sendToClipboard(txt)
 	}
 
 	makeTxt = function(o){
@@ -57,6 +58,15 @@ boss.setupExportFiles = function(d){
 			+'\n'
 		+o.data
 		+'\n'
+	}
+
+	sendToClipboard = asyn function(text){
+		try {
+		    await navigator.clipboard.writeText(text);
+		    console.log('Text successfully copied to clipboard');
+		  } catch (err) {
+		    console.error('Failed to copy: ', err);
+		}
 	}
 
 	

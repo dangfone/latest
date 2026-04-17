@@ -39,7 +39,7 @@ boss.setupExportFiles = function(d){
 		getCode()
 	})
 
-	function async getCode(){
+	getCode = async function(){
 		console.log('get funky export!')
 		var o = await boss.dbBoss.getCode()
 		console.log(o)

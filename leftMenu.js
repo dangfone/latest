@@ -36,6 +36,14 @@ boss.setupLeftM = function(d){
 
 boss.setupExportFiles = function(d){
 	d.on('click',function(){
-		console.log('get funky export!')
+		getCode()
 	})
+
+	function async getCode(){
+		console.log('get funky export!')
+		var o = await boss.dbBoss.getCode()
+		console.log(o)
+	}
+
+	
 }

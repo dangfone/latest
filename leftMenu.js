@@ -60,7 +60,7 @@ boss.setupExportFiles = function(d){
 		+'\n'
 	}
 
-	sendToClipboard = asyn function(text){
+	sendToClipboard = async function(text){
 		try {
 		    await navigator.clipboard.writeText(text);
 		    console.log('Text successfully copied to clipboard');

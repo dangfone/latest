@@ -43,6 +43,19 @@ boss.setupExportFiles = function(d){
 		console.log('get funky export!')
 		var o = await boss.dbBoss.getCode()
 		console.log(o)
+		var arr = o.tabs
+		var txt=''
+		for(var x =0; x < arr.length; x++){
+			txt +=makeTxt(arr[x])
+		}
+		console.log(txt)
+	}
+
+	makeTxt = function(o){
+		return +'\n'
+			+'//'+o.name+'.'+o.type
+			+'\n'
+		+o.data
 	}
 
 	

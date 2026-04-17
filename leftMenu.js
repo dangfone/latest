@@ -56,6 +56,7 @@ boss.setupExportFiles = function(d){
 			+'//'+o.name+'.'+o.type
 			+'\n'
 		+o.data
+		+'\n'
 	}
 
 	

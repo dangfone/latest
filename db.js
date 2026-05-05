@@ -136,6 +136,11 @@ boss.setupDbBoss = function(){
 			var info =await db.info.get(1)
 			return info.last
 		},
+
+		setJsOrder: async function(arr,id){
+			if(!id) id = await this.getLastProjectID()
+			await db.projects.update(id,{jsOrder:arr})
+		},
 		
 		
 		createTabToProject: async function(name,type,proID){

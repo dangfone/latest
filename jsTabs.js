@@ -12,6 +12,7 @@ boss.setupJsTabs = function(){
 			tabs.d = d
 			boss.tabBoss.setupEvents(tabs)
 			d.find(".bg17").removeClass("bg17")
+			tabs.tabs.sortable()
 			return tabs
 		},
 		

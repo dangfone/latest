@@ -322,6 +322,10 @@ $(function() {
 				getCss()
 			}
 		})
+
+		wrap.on('click',function(){
+			boss.setTopD(wrap)
+		})
 		grab.draggable({
 			start:function(){
 				boss.setTopD(wrap)

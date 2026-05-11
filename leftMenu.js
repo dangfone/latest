@@ -10,7 +10,7 @@ boss.setupLeftM = function(d){
 			boss.setupAutoLoad(this.addD(d,icons.getReload(s),"Autoload code"))
 			boss.setupDel(this.addD(d,icons.getTrash(s),"Delete"))
 			boss.setupExportFiles(this.addD(d,icons.getExportFile(s),"Export Files"))
-			boss.setupDlFiles(d,icons.getDownloadFile(s),"Download Html/js/css files")
+			boss.setupDlFiles(this.addD(d,icons.getDownloadFile(s),"Download Html/js/css files"))
 		},
 		addD:function(d,icon,title){
 			d.append("<div class='h3em w3em flexMe cursor hlIcon nu' title='"+title+"'>"

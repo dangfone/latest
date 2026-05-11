@@ -10,6 +10,7 @@ boss.setupLeftM = function(d){
 			boss.setupAutoLoad(this.addD(d,icons.getReload(s),"Autoload code"))
 			boss.setupDel(this.addD(d,icons.getTrash(s),"Delete"))
 			boss.setupExportFiles(this.addD(d,icons.getExportFile(s),"Export Files"))
+			boss.setupDlFiles(d,icons.getDownloadFile(s),"Download Html/js/css files")
 		},
 		addD:function(d,icon,title){
 			d.append("<div class='h3em w3em flexMe cursor hlIcon nu' title='"+title+"'>"
@@ -30,6 +31,51 @@ boss.setupLeftM = function(d){
 	}
 	leftM.setup()
 	boss.leftMBoss = leftM
+}
+
+
+//move
+boss.setupDlFiles = function(d){
+	d.on('click',function(){
+		dl()
+	})
+	
+	const dl + async function(){
+		const zip = new JSZip();
+		var o = await boss.dbBoss.getCode()
+		console.log(o)
+		var arr = o.tabs
+		for(var x =0; x < arr.length; x++){
+			var f = arr[x]
+			var n = f.name+'.'+getFileExt(f.type)
+			zip.file(n, f.data);
+		}
+
+		zip.generateAsync({type:"blob"}).then(function(content) {
+		    triggerDownload(content, "project.zip", "application/zip");
+		});
+		
+	}
+
+	const getFileExt = function(o){
+		if(o.type === 'javascript'){
+			return '.js'
+		}
+		return '.'+o.type
+	}
+	
+	const triggerDownload = (content, fileName, contentType) => {
+        const blob = new Blob([content], { type: contentType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        
+        // Clean up memory
+        URL.revokeObjectURL(url);
+    };
 }
 
 //move

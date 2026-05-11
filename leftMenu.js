@@ -40,7 +40,7 @@ boss.setupDlFiles = function(d){
 		dl()
 	})
 	
-	const dl + async function(){
+	const dl = async function(){
 		const zip = new JSZip();
 		var o = await boss.dbBoss.getCode()
 		console.log(o)

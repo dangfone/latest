@@ -40,7 +40,7 @@ boss.setupDlFiles = function(d){
 		dl()
 	})
 	
-	const dl = async function(){
+	dl = async function(){
 		const zip = new JSZip();
 		var o = await boss.dbBoss.getCode()
 		console.log(o)
@@ -57,14 +57,14 @@ boss.setupDlFiles = function(d){
 		
 	}
 
-	const getFileExt = function(o){
+	getFileExt = function(o){
 		if(o.type === 'javascript'){
 			return '.js'
 		}
 		return '.'+o.type
 	}
 	
-	const triggerDownload = (content, fileName, contentType) => {
+	triggerDownload = (content, fileName, contentType) => {
         const blob = new Blob([content], { type: contentType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
